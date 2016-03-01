@@ -1,1 +1,1 @@
-var app = angular.module('Craylist', []);
+var app = angular.module('Craylist', ['ui.router']);

@@ -3,8 +3,8 @@ var babel = require('gulp-babel');
 var runSeq = require('run-sequence');
 var plumber = require('gulp-plumber');
 var concat = require('gulp-concat');
-// var rename = require('gulp-rename');
-// var sass = require('gulp-sass');
+var rename = require('gulp-rename');
+var sass = require('gulp-sass');
 var livereload = require('gulp-livereload');
 // var minifyCSS = require('gulp-minify-css');
 // var ngAnnotate = require('gulp-ng-annotate');
@@ -14,7 +14,7 @@ var sourcemaps = require('gulp-sourcemaps');
 // var mocha = require('gulp-mocha');
 // var karma = require('karma').server;
 // var istanbul = require('gulp-istanbul');
-// var notify = require('gulp-notify');
+var notify = require('gulp-notify');
 
 // Development tasks
 // --------------------------------------------------------------
@@ -24,9 +24,9 @@ gulp.task('reload', function() {
     livereload.reload();
 });
 
-// gulp.task('reloadCSS', function() {
-//     return gulp.src('./public/style.css').pipe(livereload());
-// });
+gulp.task('reloadCSS', function() {
+    return gulp.src('./browser/public/style.css').pipe(livereload());
+});
 
 
 
@@ -77,19 +77,19 @@ gulp.task('buildJS', [], function() {
 //     }, done);
 // });
 
-// gulp.task('buildCSS', function() {
+gulp.task('buildCSS', function() {
 
-//     var sassCompilation = sass();
-//     sassCompilation.on('error', console.error.bind(console));
+    var sassCompilation = sass();
+    sassCompilation.on('error', console.error.bind(console));
 
-//     return gulp.src('./browser/scss/main.scss')
-//         .pipe(plumber({
-//             errorHandler: notify.onError('SASS processing failed! Check your gulp process.')
-//         }))
-//         .pipe(sassCompilation)
-//         .pipe(rename('style.css'))
-//         .pipe(gulp.dest('./public'));
-// });
+    return gulp.src('./browser/scss/main.scss')
+        .pipe(plumber({
+            errorHandler: notify.onError('SASS processing failed! Check your gulp process.')
+        }))
+        .pipe(sassCompilation)
+        .pipe(rename('style.css'))
+        .pipe(gulp.dest('./browser/public'));
+});
 
 // Production tasks
 // --------------------------------------------------------------
@@ -116,13 +116,15 @@ gulp.task('buildJS', [], function() {
 // Composed tasks
 // --------------------------------------------------------------
 
-// gulp.task('build', function() {
-//     if (process.env.NODE_ENV === 'production') {
-//         runSeq(['buildJSProduction', 'buildCSSProduction']);
-//     } else {
-//         runSeq(['buildJS', 'buildCSS']);
-//     }
-// });
+gulp.task('build', function() {
+    // if (process.env.NODE_ENV === 'production') {
+    //     runSeq(['buildJSProduction', 'buildCSSProduction']);
+    // } else {
+    //     runSeq(['buildJS', 'buildCSS']);
+    // }
+
+     runSeq(['buildJS', 'buildCSS']);
+});
 
 // gulp.task('end', ['testServerJSWithCoverage'], function() {
 //     process.exit(0);
@@ -138,18 +140,17 @@ gulp.task('buildJS', [], function() {
 
 gulp.task('default', function() {
 
-    gulp.start('buildJS');
+    gulp.start('build');
 
     // Run when anything inside of browser/js changes.
     gulp.watch('./browser/app/**/*.js', function() {
-    	console.log('Watching JS now?')
-        runSeq('buildJS', 'reload');
+        runSeq('build', 'reload');
     });
 
     // Run when anything inside of browser/scss changes.
-    // gulp.watch('browser/scss/**', function() {
-    //     runSeq('buildCSS', 'reloadCSS');
-    // });
+    gulp.watch('browser/scss/**', function() {
+        runSeq('buildCSS', 'reloadCSS');
+    });
 
     // gulp.watch('server/**/*.js', ['lintJS']);
 
